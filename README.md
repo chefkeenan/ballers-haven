@@ -1,4 +1,4 @@
-![HTTP Request](https://github.com/user-attachments/assets/355a3746-f74d-4a3d-9132-b7ec068de692)<img width="1919" height="1079" /># Baller's Haven
+# Baller's Haven
 Deployment link: https://ahmad-keenan-ballershaven.pbp.cs.ui.ac.id/
 
 ## Tugas Individu 2
@@ -32,6 +32,8 @@ Deployment link: https://ahmad-keenan-ballershaven.pbp.cs.ui.ac.id/
    - Push ke PWSnya
 
 ### Bagan request client
+
+![HTTP Request](https://github.com/user-attachments/assets/355a3746-f74d-4a3d-9132-b7ec068de692)<img width="1919" height="1079" />
 
   - User akan mengirim HTTP request, lalu dalam urls.py akan di routing request dengan url yang sesuai. Jika ditemukan path url yang sesuai, maka akan dilanjutkan ke fungsi yang sesuai di views.py. Disini views akan berintegrasi dengan models.py dan template.html, models.py akan berfungsi sebagai representasi database dan template.html ini sebagai tampilan front-end. Views.py akan mengambil database yang diperlukan dari models.py lalu databasenya akan disesuaikan dengan template html untuk ditampilkan. Setelah selesai pekerjaan model-view-template, Django akan mengirimkan HTTP response kembali ke user.
 
