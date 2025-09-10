@@ -32,7 +32,7 @@ Deployment link: https://ahmad-keenan-ballershaven.pbp.cs.ui.ac.id/
    - Push ke PWSnya
 
 ### Bagan request client
-![HTTP Request](https://github.com/user-attachments/assets/d688d92b-f341-49d4-8373-0171a0b3b3a2)
+
   - User akan mengirim HTTP request, lalu dalam urls.py akan di routing request dengan url yang sesuai. Jika ditemukan path url yang sesuai, maka akan dilanjutkan ke fungsi yang sesuai di views.py. Disini views akan berintegrasi dengan models.py dan template.html, models.py akan berfungsi sebagai representasi database dan template.html ini sebagai tampilan front-end. Views.py akan mengambil database yang diperlukan dari models.py lalu databasenya akan disesuaikan dengan template html untuk ditampilkan. Setelah selesai pekerjaan model-view-template, Django akan mengirimkan HTTP response kembali ke user.
 
 ### Peran settings.py dalam proyek Django
