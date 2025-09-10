@@ -1,4 +1,4 @@
-![HTTP Request](https://github.com/user-attachments/assets/355a3746-f74d-4a3d-9132-b7ec068de692)<img width="1919" height="1079" alt="Screenshot 2025-09-08 220203" src="https://github.com/user-attachments/assets/3d1980f4-a63c-410b-991e-2e6a91a047fb" /># Baller's Haven
+![HTTP Request](https://github.com/user-attachments/assets/355a3746-f74d-4a3d-9132-b7ec068de692)<img width="1919" height="1079" /># Baller's Haven
 Deployment link: https://ahmad-keenan-ballershaven.pbp.cs.ui.ac.id/
 
 ## Tugas Individu 2
