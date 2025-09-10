@@ -44,3 +44,5 @@ Deployment link: https://ahmad-keenan-ballershaven.pbp.cs.ui.ac.id/
 
 ### Mengapa framework Django dijadikan permulaan pembelajaran pengembangan perangkat lunak
   - Mungkin karena python termasuk salahsatu bahasa pemrograman yang mudah dimengerti, lalu juga Django sudah banyak menyediakan build-in programs yang bisa langsung kita gunakan sehingga tidak perlu menghardcodenya secara manual, contohnya seperti Django admin.
+
+Asdosnya mantap gacor gercep nilainya
