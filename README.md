@@ -95,7 +95,15 @@ Asdosnya mantap gacor gercep nilainya
 6. **Commit dan push ke github & PWS**
 
 
-   
+**Screenshot postman**
+
+<img width="1919" height="1079" alt="Screenshot 2025-09-17 115738" src="https://github.com/user-attachments/assets/db045210-fd50-420d-b356-30f46d1d732a" />
+<img width="1919" height="1079" alt="Screenshot 2025-09-17 115811" src="https://github.com/user-attachments/assets/1e7f5798-092b-4d9a-a0a5-6753a3130ab9" />
+<img width="1918" height="1079" alt="Screenshot 2025-09-17 120027" src="https://github.com/user-attachments/assets/0dcc2776-4e1c-40d6-b2dd-40267d17d86f" />
+<img width="1917" height="1079" alt="Screenshot 2025-09-17 120041" src="https://github.com/user-attachments/assets/fdc7690c-ecde-496d-941f-69a58fc33b09" />
+
+
+
 
 
 
