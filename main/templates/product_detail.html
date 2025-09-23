@@ -15,4 +15,8 @@
 <p><strong>Stock:</strong> {{ product.stock }}</p>
 <p><strong>Category</strong>: {{ product.get_category_display }} </p>
 
+{% if product.user %}
+    <h3>Seller: {{ product.user.username }}</h3>
+{% endif %}
+
 {% endblock content %}
