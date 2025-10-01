@@ -1,17 +1,132 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {% block meta %} {% endblock meta %}
-</head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .logo { 
+        max-height: 38px; 
+        width: auto; 
+        border-radius: 10px;
+      }
+    </style>
+  </head>
 
-<body>
-    {% block content %}
-    
-    
-    
-    {% endblock content %}
-</body>
+  <body class="min-h-screen bg-white text-[#0B1B34] pt-16">
+    <nav class="fixed top-0 left-0 w-full bg-[#0B1F3A] text-white shadow-md z-50">
+      <div class="max-w-7xl mx-auto px-6 lg:px-8">
+<div class="relative flex h-16 items-center justify-center">
+  <a href="{% url 'main:show_main' %}" class="absolute left-0 inline-flex items-center">
+    <img src="{% static 'img/ballershaven.png' %}" class="logo" alt="Baller's Haven logo" />
+  </a>
+
+  <ul class="hidden md:flex items-center gap-3">
+    <li>
+      <a href="{% url 'main:show_main' %}"
+         class="px-3 py-1.5 rounded-lg hover:bg-white/10 transition">
+        Home
+      </a>
+    </li>
+    <li>
+      <a href="{% url 'main:create_product' %}"
+         class="px-3 py-1.5 rounded-lg hover:bg-white/10 transition">
+        Add Product
+      </a>
+    </li>
+
+    {% with current=request.GET.category|default_if_none:'' %}
+    <li class="relative">
+      <button id="ddCatBtn"
+              class="inline-flex items-center px-3 py-1.5 rounded-lg hover:bg-white/10 transition focus:outline-none">
+        Categories
+        <svg class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+
+      <ul id="ddCatMenu"
+          class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-white text-[#0B1F3A]
+                 rounded-lg shadow-lg border border-gray-200 hidden z-50 overflow-hidden">
+        <a href="{% url 'main:show_main' %}" class="block px-3 py-2 hover:bg-gray-100">All</a>
+        <a href="{% url 'main:show_main' %}?category=merchandise" class="block px-3 py-2 hover:bg-gray-100">Merchandise</a>
+        <a href="{% url 'main:show_main' %}?category=accessories" class="block px-3 py-2 hover:bg-gray-100">Accessories</a>
+        <a href="{% url 'main:show_main' %}?category=shoe" class="block px-3 py-2 hover:bg-gray-100">Shoe</a>
+        <a href="{% url 'main:show_main' %}?category=jersey" class="block px-3 py-2 hover:bg-gray-100">Jersey</a>
+        <a href="{% url 'main:show_main' %}?category=ball" class="block px-3 py-2 hover:bg-gray-100">Ball</a>
+        <a href="{% url 'main:show_main' %}?category=player" class="block px-3 py-2 hover:bg-gray-100">Player</a>
+      </ul>
+    </li>
+    {% endwith %}
+  </ul>
+
+
+  <div class="absolute right-0 hidden md:flex items-center space-x-6">
+    {% if user.is_authenticated %}
+      <div class="text-right">
+        <div class="text-sm font-semibold">{{ user.username }}</div>
+        <div class="text-xs text-white/70">Logged in</div>
+      </div>
+      <a href="{% url 'main:logout' %}"
+         class="bg-white text-[#0B1F3A] px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition">
+        Logout
+      </a>
+    {% else %}
+      <a href="{% url 'main:login' %}"
+         class="px-4 py-2 rounded-full text-sm font-semibold bg-white/10 hover:bg-white/20 transition">
+         Login
+      </a>
+      <a href="{% url 'main:register' %}"
+         class="bg-white text-[#0B1F3A] px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition">
+         Register
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="md:hidden absolute right-0 flex items-center">
+    <button class="p-2 text-white/90 hover:text-white transition"
+            aria-label="Open menu" aria-controls="mobileMenu"
+            onclick="document.getElementById('mobileMenu').classList.toggle('hidden')">
+      <div class="w-6 h-6 flex flex-col justify-center items-center">
+        <span class="bg-current block h-0.5 w-6 rounded-sm"></span>
+        <span class="bg-current block h-0.5 w-6 rounded-sm my-0.5"></span>
+        <span class="bg-current block h-0.5 w-6 rounded-sm"></span>
+      </div>
+    </button>
+  </div>
+</div>
+
+
+      </div>
+    </nav>
+
+    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      {% block content %}{% endblock content %}
+    </main>
+
+    <footer class="mt-12 border-t border-[#0B1B34]/10 bg-white">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-[#0B1B34]/70">&copy; {{ now|default:2025 }} Baller's Haven. All rights reserved.</p>
+        <p class="text-sm text-[#0B1B34]/70">Crafted for the beautiful game.</p>
+      </div>
+    </footer>
+
+    <script>
+  document.addEventListener('click', function (e) {
+    const btn = document.getElementById('ddCatBtn');
+    const menu = document.getElementById('ddCatMenu');
+    if (!btn || !menu) return;
+    if (btn.contains(e.target)) {
+      menu.classList.toggle('hidden');
+    } else if (!menu.contains(e.target)) {
+      menu.classList.add('hidden');
+    }
+  });
+</script>
+
+  </body>
 </html>

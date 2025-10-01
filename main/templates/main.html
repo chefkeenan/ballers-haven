@@ -1,64 +1,98 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block meta %}
+<title>Baller's Haven - Shop</title>
+{% endblock meta %}
 
 {% block content %}
+<section class="flex flex-col gap-2">
+  <h1 class="text-3xl font-semibold tracking-tight">Baller's Haven</h1>
+</section>
 
+<p class="text-sm text-[#0B1B34]/70 mt-2">Last logged in: {{ last_login }}</p>
 
-<h1>Baller's Haven</h1>
+<div class="my-6 border-t border-[#0B1B34]/10"></div>
 
-<p>Ahmad Keenan Aryasatya Gamal</p>
-<p>2406398186</p>
-
-<a href="{% url 'main:create_product' %}">
-    <button>+ Add Product</button>
-</a>
-
-<a href="{% url 'main:logout' %}">
-  <button>Logout</button>
-</a>
-
-<h5>Last logged in: {{ last_login }}</h5>
-
-<hr>
-
-<a href="?filter=all">
-    <button type="button">All Product</button>
-</a>
-<a href="?filter=my">
-    <button type="button">My Product</button>
-</a> 
-
-{% if not product_list %}
-<p>Belum ada product.</p>
-{% else %}
-
-{% for product in product_list %}
-<div>
-
-    {% if product.thumbnail %}
-  <img src="{{ product.thumbnail }}" alt="thumbnail" width="200" height="180">
-  <br />
-  {% endif %}
-
-  <h2><a href="{% url 'main:show_product' product.id %}">{{ product.name }}</a></h2>
-
-    <p>
-        Price: {{ product.price }} | Stock: {{ product.stock }}
-    </p>
-
-  <p><b>{{ product.get_category_display }}</b>{% if product.is_featured %}  
-    <b>Featured</b>{% endif %}
-    </p>
-
-  
-
-  <p>{{ product.description|truncatewords:25 }}</p>
-
+<div class="flex flex-wrap items-center gap-3">
+  <a href="?filter=all" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border border-[#0B1B34]/20 text-[#0B1B34] hover:bg-[#0B1B34]/5" role="button">All Products</a>
+  <a href="?filter=my" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border border-[#0B1B34]/20 text-[#0B1B34] hover:bg-[#0B1B34]/5" role="button">My Products</a>
 </div>
 
-<hr>
-{% endfor %}
+{% if not product_list %}
 
+  <section class="text-center py-16">
+    <img src="{% static 'img/empty-state.jpg' %}" alt="Belum ada product" class="mx-auto w-56 opacity-90">
+    <p class="mt-4 text-gray-600">Belum ada product.</p>
+    <a href="{% url 'main:create_product' %}"
+       class="mt-6 inline-flex rounded-full bg-[#0B1F3A] text-white px-4 py-2 hover:opacity-90 transition">
+      + Add Product
+    </a>
+  </section>
+{% else %}
+
+
+  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+    {% for product in product_list %}
+      <article
+  class="relative bg-white border border-gray-200 rounded-2xl shadow-sm
+         transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg
+         overflow-hidden flex flex-col">
+
+  {% if product.is_featured %}
+    <span class="absolute top-3 right-3 z-10 px-2 py-0.5 text-[11px] rounded-full
+                 border border-yellow-200 bg-yellow-100 text-yellow-800">
+      Featured
+    </span>
+  {% endif %}
+
+  <a href="{% url 'main:show_product' product.id %}" class="block relative w-full h-48 sm:h-56 bg-gray-100">
+    {% if product.thumbnail %}
+      <img src="{{ product.thumbnail }}" alt="{{ product.name }}"
+           class="absolute inset-0 w-full h-full object-cover" />
+    {% else %}
+      <div class="absolute inset-0 bg-gray-100"></div>
+    {% endif %}
+  </a>
+  <div class="p-4 flex flex-col">
+    <h3 class="text-base font-semibold text-[#0B1F3A]">
+      <a href="{% url 'main:show_product' product.id %}" class="hover:underline underline-offset-4">
+        {{ product.name }}
+      </a>
+    </h3>
+
+    <div class="mt-1 flex items-center justify-between">
+      <span class="text-sm font-semibold text-[#0B1F3A]">Rp {{ product.price }}</span>
+      <span class="text-xs text-gray-500">Stok: {{ product.stock }}</span>
+    </div>
+
+    <p class="mt-2 text-sm text-gray-600"
+       style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+      {{ product.description }}
+    </p>
+
+    <div class="mt-4 flex items-center gap-2">
+      <a href="{% url 'main:show_product' product.id %}"
+         class="px-3 py-1.5 text-sm rounded-full bg-[#0B1F3A] text-white hover:opacity-90 transition">
+        Read More
+      </a>
+
+      {% if user.is_authenticated and product.user == user %}
+        <a href="{% url 'main:edit_product' product.pk %}"
+           class="px-3 py-1.5 text-sm rounded-full border border-[#0B1F3A] text-[#0B1F3A] hover:bg-[#0B1F3A]/5 transition">
+          Edit
+        </a>
+        <a href="{% url 'main:delete_product' product.pk %}"
+           class="px-3 py-1.5 text-sm rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition">
+          Delete
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</article>
+    {% endfor %}
+
+  </div>
 {% endif %}
-
 {% endblock content %}
-

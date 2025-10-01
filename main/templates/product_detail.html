@@ -1,22 +1,51 @@
 {% extends 'base.html' %}
+
+{% block meta %}<title>Detail Product</title>{% endblock meta %}
+
 {% block content %}
-<p><a href="{% url 'main:show_main' %}"><button>← Back</button></a></p>
+<a href="{% url 'main:show_main' %}" class="inline-flex items-center text-navy hover:underline underline-offset-4 mb-4">
+  ← Back
+</a>
 
-<h1>{{ product.title }}</h1>
+<article class="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+  <div class="grid md:grid-cols-2">
+    <div class="bg-gray-50">
+      {% if product.thumbnail %}
+        <img src="{{ product.thumbnail }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+      {% else %}
+        <div class="w-full h-full min-h-64 bg-gray-100"></div>
+      {% endif %}
+    </div>
+    <div class="p-6">
+      <h1 class="text-2xl font-semibold text-navy">{{ product.name }}</h1>
+      <p class="mt-1 text-sm text-gray-600">{{ product.get_category_display }}</p>
 
+      <p class="mt-4 text-gray-800">{{ product.description }}</p>
 
-{% if product.thumbnail %}
-<img src="{{ product.thumbnail }}" alt="product thumbnail" width="300">
-<br /><br />
-{% endif %}
+      <dl class="mt-6 grid grid-cols-2 gap-4">
+        <div>
+          <dt class="text-sm text-gray-500">Price</dt>
+          <dd class="text-lg font-semibold text-navy">Rp {{ product.price }}</dd>
+        </div>
+        <div>
+          <dt class="text-sm text-gray-500">Stock</dt>
+          <dd class="text-lg font-semibold text-navy">{{ product.stock }}</dd>
+        </div>
+      </dl>
 
-<p>{{ product.description }}</p>
-<p><strong>Price:</strong> {{ product.price }}</p>
-<p><strong>Stock:</strong> {{ product.stock }}</p>
-<p><strong>Category</strong>: {{ product.get_category_display }} </p>
+      {% if product.user %}
+        <p class="mt-6 text-sm text-gray-600">Seller: <span class="font-medium text-gray-800">{{ product.user.username }}</span></p>
+      {% endif %}
 
-{% if product.user %}
-    <h3>Seller: {{ product.user.username }}</h3>
-{% endif %}
-
+      <div class="mt-6 flex gap-2">
+        {% if user.is_authenticated and product.user == user %}
+          <a href="{% url 'main:edit_product' product.pk %}"
+             class="px-4 py-2 rounded-lg border border-navy text-navy font-medium hover:bg-navy/5 transition">Edit</a>
+          <a href="{% url 'main:delete_product' product.pk %}"
+             class="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition">Delete</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</article>
 {% endblock content %}

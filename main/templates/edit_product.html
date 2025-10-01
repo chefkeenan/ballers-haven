@@ -2,14 +2,14 @@
 {% load static %}
 
 {% block meta %}
-<title>Add Product — Baller's Haven</title>
+<title>Edit Product — Baller's Haven</title>
 {% endblock meta %}
 
 {% block content %}
 <div class="mx-auto max-w-2xl">
   <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
     <div class="px-8 pt-7 pb-4 text-center">
-      <h1 class="text-2xl font-semibold text-[#0B1F3A]">Add Product</h1>
+      <h1 class="text-2xl font-semibold text-[#0B1F3A]">Edit Product</h1>
     </div>
     <div class="px-8 pb-8">
       <form method="POST" class="styled-form space-y-5">
@@ -26,7 +26,7 @@
           </a>
           <button type="submit"
                   class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-[#0B1F3A] hover:opacity-90">
-            Add Product
+            Save Changes
           </button>
         </div>
       </form>
@@ -36,22 +36,14 @@
 
 <style>
   .styled-form p { margin: 0 0 14px 0; }
-  .styled-form label {
-    display:block; margin-bottom:6px; font-size:14px; color:#111827;
-  }
+  .styled-form label { display:block; margin-bottom:6px; font-size:14px; color:#111827; }
   .styled-form input[type="text"],
   .styled-form input[type="number"],
   .styled-form input[type="url"],
   .styled-form textarea,
   .styled-form select {
-    width:100%;
-    border:1px solid #e5e7eb;
-    background:#ffffff;
-    border-radius:10px;
-    padding:12px 14px;
-    font-size:14px;
-    color:#0B1B34;
-    outline: none;
+    width:100%; border:1px solid #e5e7eb; background:#fff; border-radius:10px;
+    padding:12px 14px; font-size:14px; color:#0B1B34; outline:none;
     transition: box-shadow .15s ease, border-color .15s ease;
   }
   .styled-form textarea { min-height:120px; resize: vertical; }
@@ -59,16 +51,13 @@
   .styled-form input[type="number"]::placeholder,
   .styled-form input[type="url"]::placeholder,
   .styled-form textarea::placeholder { color:#9CA3AF; }
-
   .styled-form input[type="text"]:focus,
   .styled-form input[type="number"]:focus,
   .styled-form input[type="url"]:focus,
   .styled-form textarea:focus,
   .styled-form select:focus {
-    border-color:#0B1F3A33;
-    box-shadow: 0 0 0 4px rgba(11,31,58,.10); 
+    border-color:#0B1F3A33; box-shadow: 0 0 0 4px rgba(11,31,58,.10);
   }
-
   .styled-form input[type="checkbox"] { margin-right:.5rem; vertical-align:middle; }
 </style>
 
@@ -76,7 +65,6 @@
   (function(){
     const $ = (sel) => document.querySelector(sel);
     const setPh = (name, ph) => { const el = $(`[name="${name}"]`); if (el && !el.placeholder) el.placeholder = ph; };
-
     setPh('name',        'Enter product name');
     setPh('price',       'Enter product price');
     setPh('description', 'Enter product description');

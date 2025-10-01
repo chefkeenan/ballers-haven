@@ -1,32 +1,71 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Register</title>
+<title>Register — Baller's Haven</title>
 {% endblock meta %}
 
 {% block content %}
+<div class="mx-auto max-w-lg">
+  <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-8">
+    <h1 class="text-2xl font-semibold text-[#0B1F3A]">Register</h1>
+    <p class="mt-1 text-sm text-gray-500">Make a new account.</p>
 
-<div>
-  <h1>Register</h1>
+    {% if messages %}
+      <ul class="mt-4 space-y-2">
+        {% for message in messages %}
+          <li class="rounded-md bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
 
-  <form method="POST">
-    {% csrf_token %}
-    <table>
-      {{ form.as_table }}
-      <tr>
-        <td></td>
-        <td><input type="submit" name="submit" value="Daftar" /></td>
-      </tr>
-    </table>
-  </form>
+    <form method="POST" class="mt-6 simple-form">
+      {% csrf_token %}
+      {{ form.as_p }}
 
-  {% if messages %}
-  <ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
+      <div class="mt-6 flex items-center justify-between">
+        <a href="{% url 'main:login' %}" class="text-sm text-[#0B1F3A] hover:underline">
+          Already have an account? Login
+        </a>
+        <button type="submit"
+          class="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-white bg-[#0B1F3A] hover:opacity-90">
+          Create Account
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
+<style>
+  .simple-form p { margin: 0 0 14px 0; }
+  .simple-form label { display:block; margin-bottom:6px; font-size:14px; color:#0B1B34; }
+  .simple-form input[type="text"],
+  .simple-form input[type="password"],
+  .simple-form input[type="email"]{
+    width:100%; border:1px solid #e5e7eb; border-radius:10px; background:#fff;
+    padding:12px 14px; font-size:14px; color:#0B1B34; outline:none;
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  .simple-form input:focus{
+    border-color:#0B1F3A33;
+    box-shadow:0 0 0 4px rgba(11,31,58,.10);
+  }
+    .helptext{ display:none;}
+  .simple-form .errorlist{ margin:6px 0 0; padding:0; list-style:none; color:#b91c1c; font-size:12px; }
+  .simple-form p:has(.errorlist) input{
+    border-color:#ef4444; box-shadow:0 0 0 4px rgba(239,68,68,.10);
+  }
+
+</style>
+
+<script>
+  (function(){
+    const setPh = (name, ph) => {
+      const el = document.querySelector(`[name="${name}"]`);
+      if (el && !el.placeholder) el.placeholder = ph;
+    };
+    setPh('username', 'Enter username');
+    setPh('password1', 'Enter password');
+    setPh('password2', 'Confirm password');
+  })();
+</script>
 {% endblock content %}

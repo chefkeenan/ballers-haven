@@ -14,4 +14,6 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
+    path('product/<uuid:id>/edit', views.edit_product, name='edit_product'),
+    path('product/<uuid:id>/delete', views.delete_product, name='delete_product'),
 ]

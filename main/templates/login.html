@@ -1,32 +1,60 @@
 {% extends 'base.html' %}
 
-{% block meta %}
-<title>Login</title>
-{% endblock meta %}
+{% block meta %}<title>Login — Baller's Haven</title>{% endblock meta %}
 
 {% block content %}
-<div class="login">
-  <h1>Login</h1>
+<div class="mx-auto max-w-lg">
+  <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-8">
+    <h1 class="text-2xl font-semibold text-[#0B1F3A]">Login</h1>
+    <p class="mt-1 text-sm text-gray-500">Welcome back. Please sign in to continue.</p>
 
-  <form method="POST" action="">
-    {% csrf_token %}
-    <table>
-      {{ form.as_table }}
-      <tr>
-        <td></td>
-        <td><input class="btn login_btn" type="submit" value="Login" /></td>
-      </tr>
-    </table>
-  </form>
+    <form method="POST" class="mt-6 login-form">
+      {% csrf_token %}
+      {{ form.as_p }}  {# kalau kamu pakai as_table juga tetap oke, lihat CSS di bawah #}
 
-  {% if messages %}
-  <ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %} Don't have an account yet?
-  <a href="{% url 'main:register' %}">Register Now</a>
+      <button type="submit"
+        class="mt-3 inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-[#0B1B34] bg-[#D4AF37] hover:opacity-90">
+        Login
+      </button>
+
+      <p class="mt-4 text-sm text-[#0B1F3A]">
+        Don't have an account yet? <a href="{% url 'main:register' %}" class="font-semibold hover:underline">Register Now</a>
+      </p>
+    </form>
+  </div>
 </div>
 
+<style>
+  .login-form p { margin: 0 0 14px 0; }
+  .login-form label { display:block; margin-bottom:6px; font-weight:600; color:#0B1B34; }
+
+  .login-form input[type="text"],
+  .login-form input[type="password"],
+  .login-form input[type="email"]{
+    width:100%;
+    border:1.5px solid #0B1B34;
+    border-radius:10px;
+    background:#fff;
+    padding:12px 14px;
+    font-size:14px;
+    color:#0B1B34;
+    outline:none;
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  .login-form input:focus{
+    border-color:#0B1F3A;
+    box-shadow:0 0 0 4px rgba(11,31,58,.10);
+  }
+
+  .login-form table { width:100%; }
+  .login-form td { padding-bottom:12px; }
+  .login-form td > input[type="text"],
+  .login-form td > input[type="password"],
+  .login-form td > input[type="email"]{
+    width:100%;
+  }
+
+  .login-form .errorlist{ margin:6px 0 0; padding:0; list-style:none; color:#b91c1c; font-size:12px; }
+  .login-form p:has(.errorlist) input{ border-color:#ef4444; box-shadow:0 0 0 4px rgba(239,68,68,.10); }
+</style>
 {% endblock content %}

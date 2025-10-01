@@ -25,6 +25,11 @@ def show_main(request):
     else:
         product_list = Product.objects.filter(user=request.user)
 
+    category = request.GET.get('category')
+    valid_categories = dict(Product.category_choices).keys()
+    if category in valid_categories:
+        product_list = product_list.filter(category=category)
+
     context = {
         'product_list': product_list,
         'last_login': request.COOKIES.get('last_login', 'Never')
@@ -32,6 +37,7 @@ def show_main(request):
 
     return render(request, "main.html", context)
 
+@login_required(login_url='/login')
 def create_product(request):
     form = ProductForm(request.POST or None)
 
@@ -115,3 +121,20 @@ def logout_user(request):
     response.delete_cookie('last_login')
     return response
 
+def edit_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    form = ProductForm(request.POST or None, instance=product)
+    if form.is_valid() and request.method == 'POST':
+        form.save()
+        return redirect('main:show_main')
+
+    context = {
+        'form': form
+    }
+
+    return render(request, "edit_product.html", context)
+
+def delete_product(request, id):
+    product = get_object_or_404(Product, pk=id)
+    product.delete()
+    return HttpResponseRedirect(reverse('main:show_main'))
