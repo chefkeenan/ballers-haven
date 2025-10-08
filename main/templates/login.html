@@ -1,19 +1,20 @@
 {% extends 'base.html' %}
 
-{% block meta %}<title>Login — Baller's Haven</title>{% endblock meta %}
+{% block meta %}<title>Login - Baller's Haven</title>{% endblock meta %}
 
 {% block content %}
 <div class="mx-auto max-w-lg">
-  <div class="rounded-2xl border border-gray-200 bg-white shadow-sm p-8">
+  <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
     <h1 class="text-2xl font-semibold text-[#0B1F3A]">Login</h1>
     <p class="mt-1 text-sm text-gray-500">Welcome back. Please sign in to continue.</p>
 
-    <form method="POST" class="mt-6 login-form">
+    <form method="POST" id="loginForm" class="mt-6 login-form" autocomplete="off">
       {% csrf_token %}
-      {{ form.as_p }}  {# kalau kamu pakai as_table juga tetap oke, lihat CSS di bawah #}
+      <div id="loginError" class="hidden mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+      {{ form.as_p }}
 
       <button type="submit"
-        class="mt-3 inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-[#0B1B34] bg-[#D4AF37] hover:opacity-90">
+        class="mt-3 inline-flex items-center justify-center rounded-full bg-[#D4AF37] px-5 py-2.5 text-sm font-semibold text-[#0B1B34] hover:opacity-90">
         Login
       </button>
 

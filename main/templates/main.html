@@ -8,91 +8,180 @@
 {% block content %}
 <section class="flex flex-col gap-2">
   <h1 class="text-3xl font-semibold tracking-tight">Baller's Haven</h1>
+  <p class="text-sm text-[#0B1B34]/70">Last logged in: {{ last_login }}</p>
 </section>
-
-<p class="text-sm text-[#0B1B34]/70 mt-2">Last logged in: {{ last_login }}</p>
 
 <div class="my-6 border-t border-[#0B1B34]/10"></div>
 
 <div class="flex flex-wrap items-center gap-3">
-  <a href="?filter=all" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border border-[#0B1B34]/20 text-[#0B1B34] hover:bg-[#0B1B34]/5" role="button">All Products</a>
-  <a href="?filter=my" class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium border border-[#0B1B34]/20 text-[#0B1B34] hover:bg-[#0B1B34]/5" role="button">My Products</a>
+  <div class="inline-flex items-center overflow-hidden rounded-full border border-[#0B1F3A]/20 bg-white shadow-sm">
+    <button type="button" class="filter-btn bg-[#0B1F3A]/10 px-4 py-2 text-sm font-medium text-[#0B1F3A]" data-filter="all">
+      All Products
+    </button>
+    <button type="button" class="filter-btn px-4 py-2 text-sm font-medium text-[#0B1F3A] transition hover:bg-[#0B1F3A]/10" data-filter="my">
+      My Products
+    </button>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <label for="categoryFilter" class="text-sm text-[#0B1B34]/70">Category</label>
+    <select id="categoryFilter" class="rounded-full border border-[#0B1F3A]/20 px-3 py-2 text-sm focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20">
+      <option value="">All</option>
+      <option value="merchandise">Merchandise</option>
+      <option value="accessories">Accessories</option>
+      <option value="shoe">Shoe</option>
+      <option value="jersey">Jersey</option>
+      <option value="ball">Ball</option>
+      <option value="player">Player</option>
+    </select>
+  </div>
+
+  <button type="button" id="refreshProductsBtn" class="inline-flex items-center gap-2 rounded-full border border-[#0B1F3A]/20 px-4 py-2 text-sm font-medium text-[#0B1F3A] transition hover:bg-[#0B1F3A]/10">
+    &#8635;
+    Refresh
+  </button>
+
+  <button type="button" id="createProductButton" class="inline-flex items-center gap-2 rounded-full bg-[#0B1F3A] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+    <span class="text-lg leading-none">+</span>
+    Add Product
+  </button>
 </div>
 
-{% if not product_list %}
+<section class="mt-8">
+  <div id="productStateLoading" class="hidden rounded-2xl border border-[#0B1F3A]/10 bg-white px-4 py-6 text-sm text-[#0B1F3A]/80 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="h-4 w-4 animate-spin rounded-full border-2 border-[#0B1F3A]/60 border-t-transparent"></span>
+      Loading products...
+    </div>
+  </div>
 
-  <section class="text-center py-16">
-    <img src="{% static 'img/empty-state.jpg' %}" alt="Belum ada product" class="mx-auto w-56 opacity-90">
+  <div id="productStateEmpty" class="hidden rounded-3xl border border-dashed border-[#0B1F3A]/20 py-16 text-center">
+    <img src="{% static 'img/empty-state.jpg' %}" alt="Belum ada product" class="mx-auto w-56 opacity-90" />
     <p class="mt-4 text-gray-600">Belum ada product.</p>
-    <a href="{% url 'main:create_product' %}"
-       class="mt-6 inline-flex rounded-full bg-[#0B1F3A] text-white px-4 py-2 hover:opacity-90 transition">
-      + Add Product
+    <button type="button" class="create-product-shortcut mt-6 inline-flex items-center gap-2 rounded-full bg-[#0B1F3A] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+      <span class="text-lg leading-none">+</span>
+      Add Product
+    </button>
+  </div>
+
+  <div id="productStateError" class="hidden rounded-2xl border border-red-200 bg-red-50 px-6 py-6 text-red-700 shadow-sm">
+    <p class="font-semibold">Gagal memuat product.</p>
+    <p class="mt-2 text-sm opacity-80" data-role="errorMessage">Silakan coba lagi dengan menekan tombol refresh di bawah.</p>
+    <button type="button" id="retryFetchProducts" class="mt-4 inline-flex items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
+      Retry
+    </button>
+  </div>
+
+  <div id="productGrid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+</section>
+
+<template id="productCardTemplate">
+  <article class="product-card relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+    <span data-role="featuredBadge" class="absolute right-3 top-3 z-10 hidden rounded-full border border-yellow-200 bg-yellow-100 px-2 py-0.5 text-[11px] text-yellow-800">Featured</span>
+
+    <a data-role="detailLink" class="relative block h-48 w-full bg-gray-100 sm:h-56">
+      <img data-role="thumbnail" src="" alt="" class="absolute inset-0 hidden h-full w-full object-cover" />
+      <div data-role="placeholder" class="absolute inset-0 flex h-full w-full items-center justify-center text-sm text-gray-400">
+        No Image
+      </div>
     </a>
-  </section>
-{% else %}
 
+    <div class="flex flex-1 flex-col p-4">
+      <p data-role="category" class="text-xs uppercase tracking-wide text-gray-400"></p>
+      <h3 class="mt-1 text-base font-semibold text-[#0B1F3A]">
+        <a data-role="nameLink" class="hover:underline underline-offset-4" href="#">Product Name</a>
+      </h3>
 
-  <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div class="mt-1 flex items-center justify-between text-sm">
+        <span data-role="price" class="font-semibold text-[#0B1F3A]"></span>
+        <span data-role="stock" class="text-gray-500"></span>
+      </div>
 
-    {% for product in product_list %}
-      <article
-  class="relative bg-white border border-gray-200 rounded-2xl shadow-sm
-         transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg
-         overflow-hidden flex flex-col">
+      <p data-role="description" class="mt-2 text-sm text-gray-600" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"></p>
 
-  {% if product.is_featured %}
-    <span class="absolute top-3 right-3 z-10 px-2 py-0.5 text-[11px] rounded-full
-                 border border-yellow-200 bg-yellow-100 text-yellow-800">
-      Featured
-    </span>
-  {% endif %}
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <a data-role="detailButton" class="rounded-full bg-[#0B1F3A] px-3 py-1.5 text-sm text-white transition hover:opacity-90" href="#">Read More</a>
+        <button type="button" data-action="edit" class="hidden rounded-full border border-[#0B1F3A] px-3 py-1.5 text-sm text-[#0B1F3A] transition hover:bg-[#0B1F3A]/5 focus:outline-none">Edit</button>
+        <button type="button" data-action="delete" class="hidden rounded-full bg-red-100 px-3 py-1.5 text-sm text-red-600 transition hover:bg-red-200 focus:outline-none">Delete</button>
+      </div>
+    </div>
+  </article>
+</template>
 
-  <a href="{% url 'main:show_product' product.id %}" class="block relative w-full h-48 sm:h-56 bg-gray-100">
-    {% if product.thumbnail %}
-      <img src="{{ product.thumbnail }}" alt="{{ product.name }}"
-           class="absolute inset-0 w-full h-full object-cover" />
-    {% else %}
-      <div class="absolute inset-0 bg-gray-100"></div>
-    {% endif %}
-  </a>
-  <div class="p-4 flex flex-col">
-    <h3 class="text-base font-semibold text-[#0B1F3A]">
-      <a href="{% url 'main:show_product' product.id %}" class="hover:underline underline-offset-4">
-        {{ product.name }}
-      </a>
-    </h3>
-
-    <div class="mt-1 flex items-center justify-between">
-      <span class="text-sm font-semibold text-[#0B1F3A]">Rp {{ product.price }}</span>
-      <span class="text-xs text-gray-500">Stok: {{ product.stock }}</span>
+<div id="productModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm">
+  <div class="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div class="flex items-start justify-between border-b border-gray-200 px-6 py-4">
+      <div class="space-y-1">
+        <h2 id="productModalTitle" class="text-xl font-semibold text-[#0B1F3A]">Create Product</h2>
+        <p id="productModalSubtitle" class="text-sm text-gray-500">Lengkapi detail produk di bawah ini.</p>
+      </div>
+      <button type="button" class="text-2xl leading-none text-gray-400 hover:text-gray-600 focus:outline-none" data-modal-close>&times;</button>
     </div>
 
-    <p class="mt-2 text-sm text-gray-600"
-       style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
-      {{ product.description }}
+    <form id="productForm" class="space-y-4 px-6 py-6" autocomplete="off">
+      <input type="hidden" name="id" id="productIdField" />
+      <div id="productFormErrors" class="hidden rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
+
+      <div>
+        <label for="productName" class="text-sm font-semibold text-[#0B1B34]">Name</label>
+        <input type="text" id="productName" name="name" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-[#0B1B34] focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20" required placeholder="Enter product name" />
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="productPrice" class="text-sm font-semibold text-[#0B1B34]">Price</label>
+          <input type="number" id="productPrice" name="price" min="0" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-[#0B1B34] focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20" required placeholder="Enter price (Rp)" />
+        </div>
+        <div>
+          <label for="productStock" class="text-sm font-semibold text-[#0B1B34]">Stock</label>
+          <input type="number" id="productStock" name="stock" min="0" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-[#0B1B34] focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20" required placeholder="Enter stock" />
+        </div>
+      </div>
+
+      <div>
+        <label for="productCategory" class="text-sm font-semibold text-[#0B1B34]">Category</label>
+        <select id="productCategory" name="category" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-[#0B1B34] focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20" required>
+          <option value="">Select category</option>
+          <option value="merchandise">Merchandise</option>
+          <option value="accessories">Accessories</option>
+          <option value="shoe">Shoe</option>
+          <option value="jersey">Jersey</option>
+          <option value="ball">Ball</option>
+          <option value="player">Player</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="productThumbnail" class="text-sm font-semibold text-[#0B1B34]">Thumbnail URL</label>
+        <input type="url" id="productThumbnail" name="thumbnail" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-[#0B1B34] focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20" placeholder="https://example.com/image.jpg" required />
+      </div>
+
+      <div>
+        <label for="productDescription" class="text-sm font-semibold text-[#0B1B34]">Description</label>
+        <textarea id="productDescription" name="description" rows="4" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-[#0B1B34] focus:border-[#0B1F3A] focus:outline-none focus:ring-2 focus:ring-[#0B1F3A]/20" placeholder="Describe the product" required></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
+        <button type="button" class="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none" data-modal-close>Cancel</button>
+        <button type="submit" id="productFormSubmitBtn" class="inline-flex items-center gap-2 rounded-full bg-[#0B1F3A] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus:outline-none">
+          Save Product
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 px-4 py-6 backdrop-blur-sm">
+  <div class="w-full max-w-md rounded-2xl bg-white px-6 py-6 shadow-2xl">
+    <h3 class="text-lg font-semibold text-red-600">Delete Product</h3>
+    <p class="mt-2 text-sm text-gray-600">
+      Are you sure you want to delete <span id="deleteProductName" class="font-semibold text-[#0B1F3A]"></span>? This action cannot be undone.
     </p>
 
-    <div class="mt-4 flex items-center gap-2">
-      <a href="{% url 'main:show_product' product.id %}"
-         class="px-3 py-1.5 text-sm rounded-full bg-[#0B1F3A] text-white hover:opacity-90 transition">
-        Read More
-      </a>
-
-      {% if user.is_authenticated and product.user == user %}
-        <a href="{% url 'main:edit_product' product.pk %}"
-           class="px-3 py-1.5 text-sm rounded-full border border-[#0B1F3A] text-[#0B1F3A] hover:bg-[#0B1F3A]/5 transition">
-          Edit
-        </a>
-        <a href="{% url 'main:delete_product' product.pk %}"
-           class="px-3 py-1.5 text-sm rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition">
-          Delete
-        </a>
-      {% endif %}
+    <div class="mt-6 flex items-center justify-end gap-3">
+      <button type="button" class="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 focus:outline-none" data-modal-close>Cancel</button>
+      <button type="button" id="confirmDeleteBtn" class="rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none">Delete</button>
     </div>
   </div>
-</article>
-    {% endfor %}
-
-  </div>
-{% endif %}
+</div>
 {% endblock content %}

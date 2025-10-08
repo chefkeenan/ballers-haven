@@ -1,75 +1,147 @@
-from django.shortcuts import render, redirect, get_object_or_404
+import datetime
+import json
+
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.core import serializers
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
+
 from main.forms import ProductForm
 from main.models import Product
-from django.http import HttpResponse
-from django.core import serializers
-
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-
-import datetime
-from django.http import HttpResponseRedirect
-from django.urls import reverse
 
 
 # Create your views here.
 
-@login_required(login_url='/login')
+def _serialize_product(product, *, include_owner=False, current_user=None):
+    """Convert Product model instance into JSON-serialisable dict."""
+    data = model_to_dict(
+        product,
+        fields=["id", "name", "price", "description", "stock", "thumbnail", "category", "is_featured"],
+    )
+    data["id"] = str(product.id)
+    data["category_label"] = dict(Product.category_choices).get(product.category, product.category)
+    data["owner"] = product.user.username if product.user else None
+    if include_owner and current_user is not None:
+        data["is_owner"] = product.user_id == current_user.id
+    return data
+
+
+@login_required(login_url="/login")
+@ensure_csrf_cookie
 def show_main(request):
-    filter_type = request.GET.get("filter", "all") 
-
-    if filter_type == "all":
-        product_list = Product.objects.all()
-    else:
-        product_list = Product.objects.filter(user=request.user)
-
-    category = request.GET.get('category')
-    valid_categories = dict(Product.category_choices).keys()
-    if category in valid_categories:
-        product_list = product_list.filter(category=category)
-
     context = {
-        'product_list': product_list,
-        'last_login': request.COOKIES.get('last_login', 'Never')
+        "last_login": request.COOKIES.get("last_login", "Never"),
     }
-
     return render(request, "main.html", context)
 
-@login_required(login_url='/login')
-def create_product(request):
-    form = ProductForm(request.POST or None)
 
-    if form.is_valid() and request.method == 'POST':
-        product_entry = form.save(commit = False)
+@login_required(login_url="/login")
+@ensure_csrf_cookie
+@require_http_methods(["GET", "POST"])
+def product_collection(request):
+    if request.method == "GET":
+        filter_type = request.GET.get("filter", "all")
+        product_list = Product.objects.all()
+
+        if filter_type == "my":
+            product_list = product_list.filter(user=request.user)
+
+        category = request.GET.get("category")
+        valid_categories = dict(Product.category_choices).keys()
+        if category in valid_categories:
+            product_list = product_list.filter(category=category)
+
+        products = [_serialize_product(product, include_owner=True, current_user=request.user) for product in product_list]
+        return JsonResponse({"success": True, "data": products})
+
+    try:
+        payload = json.loads(request.body or "{}")
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
+
+    form = ProductForm(payload)
+    if form.is_valid():
+        product_entry = form.save(commit=False)
         product_entry.user = request.user
         product_entry.save()
-        return redirect('main:show_main')
+        response = JsonResponse(
+            {
+                "success": True,
+                "message": "Product created successfully.",
+                "data": _serialize_product(product_entry, include_owner=True, current_user=request.user),
+            },
+            status=201,
+        )
+        return response
 
-    context = {'form': form}
-    return render(request, "create_product.html", context)
+    return JsonResponse({"success": False, "errors": form.errors}, status=400)
 
-@login_required(login_url='/login')
+
+@login_required(login_url="/login")
+@ensure_csrf_cookie
+@require_http_methods(["GET", "PUT", "PATCH", "DELETE"])
+def product_detail(request, id):
+    product = get_object_or_404(Product, pk=id)
+
+    if request.method == "GET":
+        return JsonResponse(
+            {"success": True, "data": _serialize_product(product, include_owner=True, current_user=request.user)}
+        )
+
+    if product.user != request.user:
+        return JsonResponse({"success": False, "message": "You do not have permission to modify this product."}, status=403)
+
+    if request.method in ["PUT", "PATCH"]:
+        try:
+            payload = json.loads(request.body or "{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
+
+        form = ProductForm(payload, instance=product)
+        if form.is_valid():
+            updated_product = form.save()
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": "Product updated successfully.",
+                    "data": _serialize_product(updated_product, include_owner=True, current_user=request.user),
+                }
+            )
+
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    product.delete()
+    return JsonResponse({"success": True, "message": "Product deleted successfully."})
+
+
+@login_required(login_url="/login")
 def show_product(request, id):
     product = get_object_or_404(Product, pk=id)
-    
 
     context = {
-        'product': product
+        "product": product,
     }
 
     return render(request, "product_detail.html", context)
+
 
 def show_xml(request):
     product_list = Product.objects.all()
     xml_data = serializers.serialize("xml", product_list)
     return HttpResponse(xml_data, content_type="application/xml")
 
+
 def show_json(request):
     product_list = Product.objects.all()
     json_data = serializers.serialize("json", product_list)
     return HttpResponse(json_data, content_type="application/json")
+
 
 def show_xml_by_id(request, product_id):
     try:
@@ -79,6 +151,7 @@ def show_xml_by_id(request, product_id):
     except Product.DoesNotExist:
         return HttpResponse(status=404)
 
+
 def show_json_by_id(request, product_id):
     try:
         product = Product.objects.filter(pk=product_id)
@@ -86,55 +159,100 @@ def show_json_by_id(request, product_id):
         return HttpResponse(json_data, content_type="application/json")
     except Product.DoesNotExist:
         return HttpResponse(status=404)
-    
-def register(request):
-    form = UserCreationForm()
 
+
+@ensure_csrf_cookie
+def register(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        try:
+            payload = json.loads(request.body or "{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
+
+        form = UserCreationForm(payload)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Your account has been successfully created!')
-            return redirect('main:login')
-    context = {'form':form}
-    return render(request, 'register.html', context)
+            return JsonResponse(
+                {"success": True, "message": "Account created successfully.", "redirect": reverse("main:login")}, status=201
+            )
 
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    form = UserCreationForm()
+    context = {"form": form}
+    return render(request, "register.html", context)
+
+
+@ensure_csrf_cookie
 def login_user(request):
+    if request.user.is_authenticated:
+        return redirect("main:show_main")
+
     if request.method == "POST":
-        form = AuthenticationForm(data=request.POST)
+        try:
+            payload = json.loads(request.body or "{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "message": "Invalid JSON payload."}, status=400)
+
+        form = AuthenticationForm(request, data=payload)
 
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            response = HttpResponseRedirect(reverse("main:show_main"))
-            response.set_cookie('last_login', str(datetime.datetime.now()))
+            response = JsonResponse(
+                {"success": True, "message": "Login successful.", "redirect": reverse("main:show_main")}
+            )
+            response.set_cookie("last_login", str(datetime.datetime.now()))
             return response
-        
-    else:
-        form = AuthenticationForm(request)
-    context = {'form': form}
-    return render(request, 'login.html', context)
-    
+
+        return JsonResponse({"success": False, "errors": form.errors}, status=400)
+
+    form = AuthenticationForm()
+    context = {"form": form}
+    return render(request, "login.html", context)
+
+
+@login_required(login_url="/login")
+@require_http_methods(["POST"])
 def logout_user(request):
     logout(request)
-    response = HttpResponseRedirect(reverse('main:login'))
-    response.delete_cookie('last_login')
+    response = JsonResponse({"success": True, "message": "Logged out successfully.", "redirect": reverse("main:login")})
+    response.delete_cookie("last_login")
     return response
 
+
+
+@login_required(login_url="/login")
+def create_product(request):
+    form = ProductForm(request.POST or None)
+
+    if form.is_valid() and request.method == "POST":
+        product_entry = form.save(commit=False)
+        product_entry.user = request.user
+        product_entry.save()
+        return redirect("main:show_main")
+
+    context = {"form": form}
+    return render(request, "create_product.html", context)
+
+
+@login_required(login_url="/login")
 def edit_product(request, id):
     product = get_object_or_404(Product, pk=id)
     form = ProductForm(request.POST or None, instance=product)
-    if form.is_valid() and request.method == 'POST':
+    if form.is_valid() and request.method == "POST":
         form.save()
-        return redirect('main:show_main')
+        return redirect("main:show_main")
 
     context = {
-        'form': form
+        "form": form,
     }
 
     return render(request, "edit_product.html", context)
 
+
+@login_required(login_url="/login")
 def delete_product(request, id):
     product = get_object_or_404(Product, pk=id)
     product.delete()
-    return HttpResponseRedirect(reverse('main:show_main'))
+    return HttpResponseRedirect(reverse("main:show_main"))

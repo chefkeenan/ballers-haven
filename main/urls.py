@@ -5,6 +5,8 @@ app_name = 'main'
 
 urlpatterns = [
     path('', views.show_main, name='show_main'),
+    path('api/products/', views.product_collection, name='product_collection'),
+    path('api/products/<uuid:id>/', views.product_detail, name='product_detail'),
     path('create-product/', views.create_product, name='create_product'),
     path('product/<uuid:id>/', views.show_product, name='show_product'),
     path('xml/', views.show_xml, name='show_xml'),

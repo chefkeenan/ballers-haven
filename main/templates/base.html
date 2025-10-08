@@ -32,12 +32,14 @@
         Home
       </a>
     </li>
+    {% if user.is_authenticated %}
     <li>
-      <a href="{% url 'main:create_product' %}"
-         class="px-3 py-1.5 rounded-lg hover:bg-white/10 transition">
+      <button type="button" id="navAddProductBtn"
+         class="px-3 py-1.5 rounded-lg hover:bg-white/10 transition focus:outline-none">
         Add Product
-      </a>
+      </button>
     </li>
+    {% endif %}
 
     {% with current=request.GET.category|default_if_none:'' %}
     <li class="relative">
@@ -52,13 +54,13 @@
       <ul id="ddCatMenu"
           class="absolute left-1/2 -translate-x-1/2 mt-2 w-48 bg-white text-[#0B1F3A]
                  rounded-lg shadow-lg border border-gray-200 hidden z-50 overflow-hidden">
-        <a href="{% url 'main:show_main' %}" class="block px-3 py-2 hover:bg-gray-100">All</a>
-        <a href="{% url 'main:show_main' %}?category=merchandise" class="block px-3 py-2 hover:bg-gray-100">Merchandise</a>
-        <a href="{% url 'main:show_main' %}?category=accessories" class="block px-3 py-2 hover:bg-gray-100">Accessories</a>
-        <a href="{% url 'main:show_main' %}?category=shoe" class="block px-3 py-2 hover:bg-gray-100">Shoe</a>
-        <a href="{% url 'main:show_main' %}?category=jersey" class="block px-3 py-2 hover:bg-gray-100">Jersey</a>
-        <a href="{% url 'main:show_main' %}?category=ball" class="block px-3 py-2 hover:bg-gray-100">Ball</a>
-        <a href="{% url 'main:show_main' %}?category=player" class="block px-3 py-2 hover:bg-gray-100">Player</a>
+        <button type="button" data-category="" class="block w-full px-3 py-2 text-left hover:bg-gray-100">All</button>
+        <button type="button" data-category="merchandise" class="block w-full px-3 py-2 text-left hover:bg-gray-100">Merchandise</button>
+        <button type="button" data-category="accessories" class="block w-full px-3 py-2 text-left hover:bg-gray-100">Accessories</button>
+        <button type="button" data-category="shoe" class="block w-full px-3 py-2 text-left hover:bg-gray-100">Shoe</button>
+        <button type="button" data-category="jersey" class="block w-full px-3 py-2 text-left hover:bg-gray-100">Jersey</button>
+        <button type="button" data-category="ball" class="block w-full px-3 py-2 text-left hover:bg-gray-100">Ball</button>
+        <button type="button" data-category="player" class="block w-full px-3 py-2 text-left hover:bg-gray-100">Player</button>
       </ul>
     </li>
     {% endwith %}
@@ -71,10 +73,10 @@
         <div class="text-sm font-semibold">{{ user.username }}</div>
         <div class="text-xs text-white/70">Logged in</div>
       </div>
-      <a href="{% url 'main:logout' %}"
-         class="bg-white text-[#0B1F3A] px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition">
+      <button type="button" id="logoutButton" data-logout-url="{% url 'main:logout' %}"
+         class="bg-white text-[#0B1F3A] px-4 py-2 rounded-full text-sm font-semibold hover:opacity-90 transition focus:outline-none">
         Logout
-      </a>
+      </button>
     {% else %}
       <a href="{% url 'main:login' %}"
          class="px-4 py-2 rounded-full text-sm font-semibold bg-white/10 hover:bg-white/20 transition">
@@ -115,18 +117,69 @@
       </div>
     </footer>
 
+    <div id="toast-container" class="fixed top-20 right-6 flex flex-col gap-3 z-[60] pointer-events-none"></div>
+
     <script>
-  document.addEventListener('click', function (e) {
-    const btn = document.getElementById('ddCatBtn');
-    const menu = document.getElementById('ddCatMenu');
-    if (!btn || !menu) return;
-    if (btn.contains(e.target)) {
-      menu.classList.toggle('hidden');
-    } else if (!menu.contains(e.target)) {
-      menu.classList.add('hidden');
-    }
-  });
-</script>
+      (function () {
+        document.addEventListener('click', function (e) {
+          const btn = document.getElementById('ddCatBtn');
+          const menu = document.getElementById('ddCatMenu');
+          if (!btn || !menu) return;
+          if (btn.contains(e.target)) {
+            menu.classList.toggle('hidden');
+          } else if (!menu.contains(e.target)) {
+            menu.classList.add('hidden');
+          }
+        });
+      })();
+
+      window.appUtils = (function () {
+        function getCookie(name) {
+          const cookieValue = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith(name + '='));
+          return cookieValue ? decodeURIComponent(cookieValue.split('=')[1]) : null;
+        }
+
+        function showToast(message, variant = 'info') {
+          const container = document.getElementById('toast-container');
+          if (!container) return;
+
+          const baseStyles = 'pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg text-sm transition-opacity duration-300';
+          const variants = {
+            success: 'bg-green-50 border-green-200 text-green-800',
+            error: 'bg-red-50 border-red-200 text-red-700',
+            info: 'bg-blue-50 border-blue-200 text-blue-700',
+            warning: 'bg-amber-50 border-amber-200 text-amber-700',
+          };
+          const toast = document.createElement('div');
+          toast.className = `${baseStyles} ${variants[variant] || variants.info}`;
+          toast.classList.add('opacity-0');
+          toast.innerHTML = `
+            <div class="flex-1 leading-relaxed">${message}</div>
+            <button type="button" class="text-current/70 hover:text-current font-semibold focus:outline-none">×</button>
+          `;
+
+          const dismiss = () => {
+            toast.classList.add('opacity-0');
+            setTimeout(() => toast.remove(), 250);
+          };
+
+          toast.querySelector('button')?.addEventListener('click', dismiss);
+          setTimeout(dismiss, 3200);
+          container.appendChild(toast);
+          requestAnimationFrame(() => toast.classList.remove('opacity-0'));
+        }
+
+        function toggleBodyScroll(disabled) {
+          document.body.classList.toggle('overflow-hidden', Boolean(disabled));
+        }
+
+        return { getCookie, showToast, toggleBodyScroll };
+      })();
+    </script>
+    <script defer src="{% static 'js/auth.js' %}"></script>
+    <script defer src="{% static 'js/products.js' %}"></script>
 
   </body>
 </html>

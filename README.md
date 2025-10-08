@@ -7,3 +7,4 @@ Deployment link: https://ahmad-keenan-ballershaven.pbp.cs.ui.ac.id/
 - [Tugas Individu 3](./tugas/tugas3/README.md)
 - [Tugas Individu 4](./tugas/tugas4/README.md)
 - [Tugas Individu 5](./tugas/tugas5/README.md)
+- [Tugas Individu %](./tugas/tugas6/README.md)
