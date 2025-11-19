@@ -1,6 +1,5 @@
 import datetime
 import json
-
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
@@ -11,10 +10,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods
-
 from main.forms import ProductForm
 from main.models import Product
-
+import requests
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -256,3 +255,50 @@ def delete_product(request, id):
     product = get_object_or_404(Product, pk=id)
     product.delete()
     return HttpResponseRedirect(reverse("main:show_main"))
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+    
+@csrf_exempt
+def create_product_flutter(request):
+    if request.method == 'POST':
+        if not request.user.is_authenticated:
+            return JsonResponse({"status": "error", "message": "Login diperlukan."}, status=401)
+
+        try:
+            data = json.loads(request.body)
+
+            new_product = Product(
+                name=strip_tags(data.get("name", "")),
+                price=int(data.get("price", 0)),
+                description=strip_tags(data.get("description", "")),
+                stock=int(data.get("stock", 0)),
+                category=data.get("category", "Merchandise"),
+                thumbnail=data.get("thumbnail", ""),
+                is_featured=data.get("is_featured", False),
+                user=request.user
+            )
+            new_product.save()
+
+            return JsonResponse({"status": "success"}, status=200)
+
+        except Exception as e:
+             return JsonResponse({"status": "error", "message": f"Data tidak valid: {str(e)}"}, status=400)
+
+    else:
+        return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)

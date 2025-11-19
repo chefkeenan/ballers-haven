@@ -18,4 +18,5 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('product/<uuid:id>/edit', views.edit_product, name='edit_product'),
     path('product/<uuid:id>/delete', views.delete_product, name='delete_product'),
+    path('create-flutter/', views.create_product_flutter, name='create_product_flutter'),
 ]
