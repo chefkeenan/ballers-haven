@@ -19,4 +19,5 @@ urlpatterns = [
     path('product/<uuid:id>/edit', views.edit_product, name='edit_product'),
     path('product/<uuid:id>/delete', views.delete_product, name='delete_product'),
     path('create-flutter/', views.create_product_flutter, name='create_product_flutter'),
+    path('proxy-image/', views.proxy_image, name='proxy_image'),
 ]

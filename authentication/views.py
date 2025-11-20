@@ -36,21 +36,18 @@ def register(request):
         password1 = data['password1']
         password2 = data['password2']
 
-        # Check if the passwords match
         if password1 != password2:
             return JsonResponse({
                 "status": False,
                 "message": "Passwords do not match."
             }, status=400)
         
-        # Check if the username is already taken
         if User.objects.filter(username=username).exists():
             return JsonResponse({
                 "status": False,
                 "message": "Username already exists."
             }, status=400)
         
-        # Create the new user
         user = User.objects.create_user(username=username, password=password1)
         user.save()
         

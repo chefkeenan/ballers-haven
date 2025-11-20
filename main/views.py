@@ -14,6 +14,8 @@ from main.forms import ProductForm
 from main.models import Product
 import requests
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.html import strip_tags
+
 
 # Create your views here.
 
